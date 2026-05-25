@@ -1,5 +1,22 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
+
+import { useState } from "react"
+
+import { leagueData } from "../utils/leagues"
+
+import {
+  addFavorite,
+  removeFavorite,
+  isFavorite
+} from "../utils/favorites"
+
+import {
+  generatePrediction
+} from "../utils/predictions"
+
+import {
+  getLiveMinute
+} from "../utils/liveTime"
 
 function MatchCard({
   match,
@@ -14,162 +31,190 @@ function MatchCard({
   minute,
   status
 }) {
-  const navigate = useNavigate()
 
-  const [favorite, setFavorite] = useState(false)
+  const leagueInfo =
+    leagueData[league] || {}
 
-  useEffect(() => {
-    const favorites =
-      JSON.parse(localStorage.getItem("favorites")) || []
+  const [favorite, setFavorite] =
+    useState(
+      isFavorite(team1)
+    )
 
-    if (
-      favorites.includes(team1) ||
-      favorites.includes(team2)
-    ) {
-      setFavorite(true)
-    }
-  }, [team1, team2])
+  const aiPrediction =
+    generatePrediction(match)
+
+  const liveMinute =
+    getLiveMinute(minute)
 
   function toggleFavorite(e) {
-    e.stopPropagation()
 
-    let favorites =
-      JSON.parse(localStorage.getItem("favorites")) || []
+    e.preventDefault()
 
     if (favorite) {
 
-      favorites = favorites.filter(
-        (team) =>
-          team !== team1 &&
-          team !== team2
-      )
-
-      setFavorite(false)
+      removeFavorite(team1)
 
     } else {
 
-      favorites.push(team1)
-      favorites.push(team2)
-
-      setFavorite(true)
+      addFavorite(team1)
     }
 
-    localStorage.setItem(
-      "favorites",
-      JSON.stringify(favorites)
-    )
+    setFavorite(!favorite)
   }
 
   return (
-    <div
-      onClick={() =>
-        navigate("/match", {
-          state: { match }
-        })
-      }
-      className="bg-slate-800 p-5 rounded-2xl shadow-xl w-full sm:w-[340px] hover:scale-105 hover:bg-slate-700 transition duration-300 cursor-pointer"
+
+    <Link
+      to={`/match/${match.fixture.id}`}
+      className={`rounded-2xl p-6 w-full md:w-[360px] border transition shadow-lg hover:scale-[1.02] ${
+        status === "LIVE"
+          ? "bg-slate-900 border-red-500 shadow-red-500/20"
+          : "bg-slate-900 border-slate-800 hover:border-green-500"
+      }`}
     >
 
       {/* TOP */}
 
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center justify-between mb-5">
+
+        {/* LEAGUE */}
 
         <div>
 
-          <p className="text-green-400 text-sm">
+          <p className="text-green-400 text-sm font-bold">
             {league}
+          </p>
+
+          <p className="text-slate-400 text-xs">
+            {leagueInfo.flag}
+            {" "}
+            {leagueInfo.country}
           </p>
 
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* STATUS + FAVORITE */}
 
-          {/* FAVORITE */}
+        <div className="flex items-center gap-3">
 
           <button
             onClick={toggleFavorite}
-            className="text-2xl hover:scale-125 transition"
+            className="text-2xl hover:scale-110 transition"
           >
             {favorite ? "⭐" : "☆"}
           </button>
 
-          {/* STATUS */}
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-bold ${
+              status === "LIVE"
+                ? "bg-red-500 text-white animate-pulse"
+                : status === "FT"
+                ? "bg-green-500 text-black"
+                : "bg-slate-700 text-white"
+            }`}
+          >
 
-          <div className="bg-red-500 px-3 py-1 rounded-full text-xs md:text-sm font-bold">
-            {status}
+            {status === "LIVE"
+              ? `${liveMinute}' LIVE`
+              : status}
+
           </div>
 
         </div>
 
       </div>
 
-      {/* MATCH CONTENT */}
+      {/* MATCH */}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="space-y-5">
 
-        {/* HOME TEAM */}
+        {/* HOME */}
 
-        <div className="flex flex-col items-center w-[90px]">
+        <div className="flex items-center justify-between">
 
-          <img
-            src={homeLogo}
-            alt={team1}
-            className="w-14 h-14 md:w-16 md:h-16 object-contain"
-          />
+          <div className="flex items-center gap-4">
 
-          <p className="mt-2 text-center text-sm md:text-base font-semibold">
-            {team1}
-          </p>
+            <img
+              src={homeLogo}
+              alt={team1}
+              className="w-12 h-12"
+            />
 
-        </div>
+            <h2 className="font-bold text-lg">
+              {team1}
+            </h2>
 
-        {/* SCORE */}
+          </div>
 
-        <div className="text-center">
-
-          <p className="text-3xl md:text-4xl font-bold text-green-400">
-            {score}
-          </p>
-
-          <p className="text-yellow-400 font-bold text-lg md:text-xl mt-2">
-            {minute}'
-          </p>
+          <span className="text-2xl font-bold text-green-400">
+            {score.split("-")[0]}
+          </span>
 
         </div>
 
-        {/* AWAY TEAM */}
+        {/* AWAY */}
 
-        <div className="flex flex-col items-center w-[90px]">
+        <div className="flex items-center justify-between">
 
-          <img
-            src={awayLogo}
-            alt={team2}
-            className="w-14 h-14 md:w-16 md:h-16 object-contain"
-          />
+          <div className="flex items-center gap-4">
 
-          <p className="mt-2 text-center text-sm md:text-base font-semibold">
-            {team2}
-          </p>
+            <img
+              src={awayLogo}
+              alt={team2}
+              className="w-12 h-12"
+            />
+
+            <h2 className="font-bold text-lg">
+              {team2}
+            </h2>
+
+          </div>
+
+          <span className="text-2xl font-bold text-green-400">
+            {score.split("-")[1]}
+          </span>
 
         </div>
 
       </div>
 
-      {/* MATCH INFO */}
+      {/* AI PREDICTION */}
 
-      <div className="border-t border-slate-700 pt-4">
+      <div className="mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700">
 
-        <p className="text-sky-400 text-sm md:text-base mb-2">
+        <p className="text-sm text-slate-400 mb-2">
+          🧠 AI Prediction
+        </p>
+
+        <div className="flex items-center justify-between">
+
+          <p className="font-bold text-green-400">
+            {aiPrediction.prediction}
+          </p>
+
+          <span className="text-sm bg-green-500 text-black px-3 py-1 rounded-full font-bold">
+            {aiPrediction.confidence}%
+          </span>
+
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+
+      <div className="mt-6 border-t border-slate-800 pt-4 space-y-2">
+
+        <p className="text-slate-300 text-sm">
           🕒 {time}
         </p>
 
-        <p className="text-slate-300 text-sm md:text-base">
-          🏟 {stadium}
+        <p className="text-slate-400 text-sm">
+          🏟️ {stadium}
         </p>
 
       </div>
 
-    </div>
+    </Link>
   )
 }
 

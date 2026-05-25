@@ -119,3 +119,46 @@ export async function getMatchEvents(fixtureId) {
 
   return data.response
 }
+/* LEAGUE STANDINGS */
+
+export async function getLeagueStandings(
+  leagueId,
+  season = 2024
+) {
+
+  const response = await fetch(
+    `${BASE_URL}/standings?league=${leagueId}&season=${season}`,
+    {
+      method: "GET",
+      headers
+    }
+  )
+
+  const data = await response.json()
+
+  return data.response
+}
+/* MATCH HIGHLIGHTS */
+
+export async function getMatchHighlights() {
+
+  return [
+    {
+      title: "Premier League Highlights",
+      video:
+        "https://www.youtube.com/embed/XqZsoesa55w"
+    },
+
+    {
+      title: "Champions League Highlights",
+      video:
+        "https://www.youtube.com/embed/ScMzIvxBSi4"
+    },
+
+    {
+      title: "La Liga Match Highlights",
+      video:
+        "https://www.youtube.com/embed/tgbNymZ7vqY"
+    }
+  ]
+}

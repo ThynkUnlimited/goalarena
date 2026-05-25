@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
 
 import {
   getMatchStatistics,
@@ -8,384 +8,235 @@ import {
 } from "../services/footballApi"
 
 function MatchDetails() {
-  const { state } = useLocation()
 
-  const match = state?.match
+  const { id } = useParams()
 
   const [stats, setStats] = useState([])
   const [lineups, setLineups] = useState([])
   const [events, setEvents] = useState([])
 
   useEffect(() => {
-    async function fetchMatchData() {
-      if (match?.fixture?.id) {
 
-        const statisticsData =
-          await getMatchStatistics(match.fixture.id)
+    async function fetchData() {
 
-        setStats(statisticsData)
+      const statsData =
+        await getMatchStatistics(id)
 
-        const lineupData =
-          await getMatchLineups(match.fixture.id)
+      const lineupData =
+        await getMatchLineups(id)
 
-        setLineups(lineupData)
+      const eventsData =
+        await getMatchEvents(id)
 
-        const eventsData =
-          await getMatchEvents(match.fixture.id)
-
-        setEvents(eventsData)
-      }
+      setStats(statsData)
+      setLineups(lineupData)
+      setEvents(eventsData)
     }
 
-    fetchMatchData()
-  }, [match])
+    fetchData()
 
-  if (!match) {
-    return (
-      <div className="text-white p-10">
-        Match not found
-      </div>
-    )
-  }
-
-  const homeStats = stats[0]
-  const awayStats = stats[1]
+  }, [id])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
+    <div className="min-h-screen bg-slate-950 text-white p-6">
 
-      {/* LEAGUE */}
+      <h1 className="text-4xl font-bold text-green-500 mb-8">
+        ⚽ Match Details
+      </h1>
 
-      <p className="text-green-400 mb-4 text-lg">
-        {match.league.name}
-      </p>
+      {/* STATISTICS */}
 
-      <div className="bg-slate-900 rounded-3xl p-8 shadow-2xl max-w-6xl mx-auto">
+      <div className="bg-slate-900 rounded-2xl p-6 mb-10">
 
-        {/* SCORE SECTION */}
+        <h2 className="text-2xl font-bold mb-6 text-green-400">
+          📊 Match Statistics
+        </h2>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        {stats.length > 0 ? (
 
-          {/* HOME */}
+          <div className="space-y-4">
 
-          <div className="flex flex-col items-center">
+            {stats[0].statistics.map((item, index) => (
 
-            <img
-              src={match.teams.home.logo}
-              alt={match.teams.home.name}
-              className="w-28 h-28 object-contain"
-            />
+              <div
+                key={index}
+                className="flex justify-between items-center border-b border-slate-800 pb-3"
+              >
 
-            <h2 className="text-2xl font-bold mt-4 text-center">
-              {match.teams.home.name}
-            </h2>
+                <span className="font-semibold text-slate-300">
+                  {item.type}
+                </span>
 
-          </div>
+                <div className="flex gap-10">
 
-          {/* SCORE */}
+                  <span className="text-green-400 font-bold">
+                    {item.value ?? 0}
+                  </span>
 
-          <div className="text-center">
+                  <span className="text-slate-500">
+                    vs
+                  </span>
 
-            <p className="text-6xl font-bold text-green-400">
-              {match.goals.home} - {match.goals.away}
-            </p>
-
-            <p className="text-yellow-400 text-2xl font-bold mt-4">
-              {match.fixture.status.elapsed || 0}'
-            </p>
-
-            <div className="bg-red-500 px-4 py-2 rounded-full mt-4 font-bold inline-block">
-              {match.fixture.status.short}
-            </div>
-
-          </div>
-
-          {/* AWAY */}
-
-          <div className="flex flex-col items-center">
-
-            <img
-              src={match.teams.away.logo}
-              alt={match.teams.away.name}
-              className="w-28 h-28 object-contain"
-            />
-
-            <h2 className="text-2xl font-bold mt-4 text-center">
-              {match.teams.away.name}
-            </h2>
-
-          </div>
-
-        </div>
-
-        {/* MATCH INFO */}
-
-        <div className="border-t border-slate-700 mt-10 pt-6 space-y-4 text-slate-300">
-
-          <p>
-            🏟 Stadium: {match.fixture.venue.name}
-          </p>
-
-          <p>
-            📍 City: {match.fixture.venue.city}
-          </p>
-
-          <p>
-            🕒 Time:
-            {" "}
-            {new Date(match.fixture.date).toLocaleString("en-KE")}
-          </p>
-
-          <p>
-            ⚽ Referee:
-            {" "}
-            {match.fixture.referee || "Unknown"}
-          </p>
-
-        </div>
-
-        {/* STATISTICS */}
-
-        <div className="mt-14">
-
-          <h2 className="text-3xl font-bold text-green-400 mb-8">
-            📊 Match Statistics
-          </h2>
-
-          {homeStats && awayStats ? (
-
-            <div className="space-y-5">
-
-              {homeStats.statistics.map((stat, index) => (
-
-                <div
-                  key={index}
-                  className="bg-slate-800 rounded-xl p-4"
-                >
-
-                  <div className="flex justify-between items-center gap-4">
-
-                    <p className="font-bold text-green-400 w-[80px]">
-                      {stat.value || 0}
-                    </p>
-
-                    <p className="text-slate-300 text-center flex-1">
-                      {stat.type}
-                    </p>
-
-                    <p className="font-bold text-green-400 w-[80px] text-right">
-                      {awayStats.statistics[index].value || 0}
-                    </p>
-
-                  </div>
+                  <span className="text-blue-400 font-bold">
+                    {stats[1]?.statistics[index]?.value ?? 0}
+                  </span>
 
                 </div>
 
-              ))}
+              </div>
 
-            </div>
+            ))}
 
-          ) : (
+          </div>
 
-            <p className="text-slate-400">
-              Statistics unavailable.
-            </p>
+        ) : (
 
-          )}
+          <p className="text-slate-400">
+            No statistics available.
+          </p>
 
-        </div>
+        )}
 
-        {/* LINEUPS */}
+      </div>
 
-        <div className="mt-16">
+      {/* EVENTS */}
 
-          <h2 className="text-3xl font-bold text-green-400 mb-8">
-            📺 Team Lineups
-          </h2>
+      <div className="bg-slate-900 rounded-2xl p-6 mb-10">
 
-          {lineups.length > 0 ? (
+        <h2 className="text-2xl font-bold mb-6 text-green-400">
+          🔥 Match Events
+        </h2>
 
-            <div className="grid md:grid-cols-2 gap-8">
+        {events.length > 0 ? (
 
-              {lineups.map((team, index) => (
+          <div className="space-y-4">
 
-                <div
-                  key={index}
-                  className="bg-slate-800 rounded-2xl p-6"
-                >
+            {events.map((event, index) => (
 
-                  {/* TEAM HEADER */}
+              <div
+                key={index}
+                className="bg-slate-800 rounded-xl p-4 flex justify-between items-center"
+              >
 
-                  <div className="flex items-center gap-4 mb-6">
+                <div>
 
-                    <img
-                      src={team.team.logo}
-                      alt={team.team.name}
-                      className="w-14 h-14"
-                    />
+                  <p className="font-bold">
+                    {event.player.name}
+                  </p>
 
-                    <div>
+                  <p className="text-slate-400 text-sm">
+                    {event.team.name}
+                  </p>
 
-                      <h3 className="text-2xl font-bold">
-                        {team.team.name}
-                      </h3>
+                </div>
 
-                      <p className="text-green-400">
-                        Formation: {team.formation}
-                      </p>
+                <div className="text-right">
 
-                    </div>
+                  <p className="font-bold text-green-400">
+                    {event.type}
+                  </p>
 
-                  </div>
+                  <p className="text-slate-400 text-sm">
+                    {event.time.elapsed}'
+                  </p>
 
-                  {/* STARTING XI */}
+                </div>
 
-                  <div className="mb-8">
+              </div>
 
-                    <h4 className="text-xl font-bold text-yellow-400 mb-4">
-                      Starting XI
-                    </h4>
+            ))}
 
-                    <div className="space-y-3">
+          </div>
 
-                      {team.startXI.map((player, idx) => (
+        ) : (
 
-                        <div
-                          key={idx}
-                          className="bg-slate-700 rounded-lg px-4 py-3 flex justify-between"
-                        >
+          <p className="text-slate-400">
+            No events available.
+          </p>
 
-                          <p>
-                            {player.player.number}.
-                            {" "}
-                            {player.player.name}
-                          </p>
+        )}
 
-                          <p className="text-green-400">
-                            {player.player.pos}
-                          </p>
+      </div>
 
-                        </div>
+      {/* LINEUPS */}
 
-                      ))}
+      <div className="bg-slate-900 rounded-2xl p-6">
 
-                    </div>
+        <h2 className="text-2xl font-bold mb-6 text-green-400">
+          👥 Team Lineups
+        </h2>
 
-                  </div>
+        {lineups.length > 0 ? (
 
-                  {/* SUBSTITUTES */}
+          <div className="grid md:grid-cols-2 gap-8">
+
+            {lineups.map((team, index) => (
+
+              <div
+                key={index}
+                className="bg-slate-800 rounded-xl p-5"
+              >
+
+                <div className="flex items-center gap-4 mb-5">
+
+                  <img
+                    src={team.team.logo}
+                    alt={team.team.name}
+                    className="w-12 h-12"
+                  />
 
                   <div>
 
-                    <h4 className="text-xl font-bold text-sky-400 mb-4">
-                      Substitutes
-                    </h4>
+                    <h3 className="text-xl font-bold">
+                      {team.team.name}
+                    </h3>
 
-                    <div className="space-y-3">
+                    <p className="text-slate-400">
+                      Formation: {team.formation}
+                    </p>
 
-                      {team.substitutes.map((player, idx) => (
+                  </div>
 
-                        <div
-                          key={idx}
-                          className="bg-slate-700 rounded-lg px-4 py-3 flex justify-between"
-                        >
+                </div>
 
-                          <p>
-                            {player.player.number}.
-                            {" "}
-                            {player.player.name}
-                          </p>
+                <div className="space-y-2">
 
-                          <p className="text-green-400">
-                            {player.player.pos}
-                          </p>
+                  {team.startXI.map((player, idx) => (
 
-                        </div>
+                    <div
+                      key={idx}
+                      className="flex justify-between border-b border-slate-700 pb-2"
+                    >
 
-                      ))}
+                      <span>
+                        {player.player.number}.
+                        {" "}
+                        {player.player.name}
+                      </span>
+
+                      <span className="text-slate-400">
+                        {player.player.pos}
+                      </span>
 
                     </div>
 
-                  </div>
+                  ))}
 
                 </div>
 
-              ))}
+              </div>
 
-            </div>
+            ))}
 
-          ) : (
+          </div>
 
-            <p className="text-slate-400">
-              Lineups unavailable.
-            </p>
+        ) : (
 
-          )}
+          <p className="text-slate-400">
+            No lineups available.
+          </p>
 
-        </div>
-
-        {/* MATCH EVENTS */}
-
-        <div className="mt-16">
-
-          <h2 className="text-3xl font-bold text-green-400 mb-8">
-            📈 Match Events
-          </h2>
-
-          {events.length > 0 ? (
-
-            <div className="space-y-4">
-
-              {events.map((event, index) => (
-
-                <div
-                  key={index}
-                  className="bg-slate-800 rounded-xl p-5 flex items-center justify-between"
-                >
-
-                  <div>
-
-                    <p className="text-yellow-400 font-bold">
-                      {event.time.elapsed}'
-                    </p>
-
-                    <p className="text-white font-semibold">
-                      {event.player.name}
-                    </p>
-
-                    <p className="text-slate-400 text-sm">
-                      {event.team.name}
-                    </p>
-
-                  </div>
-
-                  <div className="text-right">
-
-                    <p className="text-green-400 font-bold">
-                      {event.type}
-                    </p>
-
-                    <p className="text-slate-300 text-sm">
-                      {event.detail}
-                    </p>
-
-                  </div>
-
-                </div>
-
-              ))}
-
-            </div>
-
-          ) : (
-
-            <p className="text-slate-400">
-              No match events available.
-            </p>
-
-          )}
-
-        </div>
+        )}
 
       </div>
 

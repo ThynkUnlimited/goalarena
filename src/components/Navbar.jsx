@@ -1,28 +1,98 @@
+import {
+  Link,
+  useLocation
+} from "react-router-dom"
+
+import { useEffect, useState } from "react"
+
+import {
+  getTheme,
+  setTheme
+} from "../utils/theme"
+
 function Navbar() {
+
+  const location = useLocation()
+
+  const [theme, setThemeState] =
+    useState("dark")
+
+  useEffect(() => {
+
+    setThemeState(
+      getTheme()
+    )
+
+  }, [])
+
+  function toggleTheme() {
+
+    const newTheme =
+      theme === "dark"
+        ? "light"
+        : "dark"
+
+    setTheme(newTheme)
+
+    setThemeState(newTheme)
+  }
+
+  function active(path) {
+
+    return location.pathname === path
+      ? "text-green-400"
+      : theme === "dark"
+      ? "text-white"
+      : "text-slate-900"
+  }
+
   return (
-    <nav className="flex flex-col md:flex-row md:justify-between md:items-center px-6 md:px-10 py-5 bg-slate-900 border-b border-slate-800 gap-4">
 
-      <h1 className="text-3xl md:text-4xl font-bold text-green-500">
+    <nav className={`border-b px-6 py-4 flex items-center justify-between sticky top-0 z-50 ${
+      theme === "dark"
+        ? "bg-slate-900 border-slate-800"
+        : "bg-white border-slate-300"
+    }`}>
+
+      {/* LOGO */}
+
+      <Link
+        to="/"
+        className="text-3xl font-bold text-green-500"
+      >
         ⚽ GoalArena
-      </h1>
+      </Link>
 
-      <div className="flex flex-wrap gap-4 md:gap-8 text-slate-300 text-sm md:text-lg">
+      {/* LINKS */}
 
-        <p className="hover:text-green-400 cursor-pointer transition">
+      <div className="flex items-center gap-6 text-lg font-semibold">
+
+        <Link
+          to="/"
+          className={`${active("/")} hover:text-green-400 transition`}
+        >
           Home
-        </p>
+        </Link>
 
-        <p className="hover:text-green-400 cursor-pointer transition">
-          Live Matches
-        </p>
+        <Link
+          to="/standings"
+          className={`${active("/standings")} hover:text-green-400 transition`}
+        >
+          Standings
+        </Link>
 
-        <p className="hover:text-green-400 cursor-pointer transition">
-          Fixtures
-        </p>
+        {/* THEME BUTTON */}
 
-        <p className="hover:text-green-400 cursor-pointer transition">
-          World Cup
-        </p>
+        <button
+          onClick={toggleTheme}
+          className="text-2xl"
+        >
+
+          {theme === "dark"
+            ? "🌙"
+            : "☀️"}
+
+        </button>
 
       </div>
 

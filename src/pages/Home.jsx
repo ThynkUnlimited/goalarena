@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react"
 
 import MatchCard from "../components/MatchCard"
+import Highlights from "../components/Highlights"
 
 import {
   getLiveMatches,
@@ -14,18 +15,31 @@ import {
 } from "../utils/notifications"
 
 function Home() {
+
   const [matches, setMatches] = useState([])
-  const [activeTab, setActiveTab] = useState("live")
-  const [search, setSearch] = useState("")
-  const [selectedLeague, setSelectedLeague] = useState("all")
-  const [previousScores, setPreviousScores] = useState({})
+
+  const [activeTab, setActiveTab] =
+    useState("live")
+
+  const [search, setSearch] =
+    useState("")
+
+  const [selectedLeague, setSelectedLeague] =
+    useState("all")
+
+  const [previousScores, setPreviousScores] =
+    useState({})
 
   useEffect(() => {
+
     requestNotificationPermission()
+
     fetchMatches()
 
     const interval = setInterval(() => {
+
       fetchMatches()
+
     }, 60000)
 
     return () => clearInterval(interval)
@@ -33,6 +47,7 @@ function Home() {
   }, [activeTab])
 
   async function fetchMatches() {
+
     let data = []
 
     if (activeTab === "live") {
@@ -49,7 +64,8 @@ function Home() {
 
     data.forEach((match) => {
 
-      const fixtureId = match.fixture.id
+      const fixtureId =
+        match.fixture.id
 
       const currentScore =
         `${match.goals.home}-${match.goals.away}`
@@ -66,20 +82,29 @@ function Home() {
 
       }
 
-      previousScores[fixtureId] = currentScore
+      previousScores[fixtureId] =
+        currentScore
+
     })
 
-    setPreviousScores({ ...previousScores })
+    setPreviousScores({
+      ...previousScores
+    })
 
     setMatches(data)
   }
 
   const leagues = [
     "all",
-    ...new Set(matches.map((match) => match.league.name))
+    ...new Set(
+      matches.map(
+        (match) => match.league.name
+      )
+    )
   ]
 
   const filteredMatches = useMemo(() => {
+
     return matches.filter((match) => {
 
       const home =
@@ -101,10 +126,17 @@ function Home() {
         match.league.name === selectedLeague
 
       return matchesSearch && matchesLeague
+
     })
-  }, [matches, search, selectedLeague])
+
+  }, [
+    matches,
+    search,
+    selectedLeague
+  ])
 
   return (
+
     <div className="min-h-screen bg-slate-950 text-white p-4 md:p-10">
 
       {/* HEADER */}
@@ -116,7 +148,7 @@ function Home() {
         </h1>
 
         <p className="text-slate-300 text-xl">
-          World Football Scores in Kenyan Time
+          Live Football Scores in Kenyan Time
         </p>
 
       </div>
@@ -129,7 +161,9 @@ function Home() {
           type="text"
           placeholder="Search teams or leagues..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
           className="w-full md:w-[400px] bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 text-white outline-none focus:border-green-500"
         />
 
@@ -142,7 +176,9 @@ function Home() {
         <select
           value={selectedLeague}
           onChange={(e) =>
-            setSelectedLeague(e.target.value)
+            setSelectedLeague(
+              e.target.value
+            )
           }
           className="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 text-white outline-none focus:border-green-500"
         >
@@ -153,9 +189,11 @@ function Home() {
               key={league}
               value={league}
             >
+
               {league === "all"
                 ? "All Leagues"
                 : league}
+
             </option>
 
           ))}
@@ -169,7 +207,9 @@ function Home() {
       <div className="flex flex-wrap gap-4 mb-10">
 
         <button
-          onClick={() => setActiveTab("live")}
+          onClick={() =>
+            setActiveTab("live")
+          }
           className={`px-6 py-3 rounded-xl font-bold transition ${
             activeTab === "live"
               ? "bg-green-500 text-black"
@@ -180,7 +220,9 @@ function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab("upcoming")}
+          onClick={() =>
+            setActiveTab("upcoming")
+          }
           className={`px-6 py-3 rounded-xl font-bold transition ${
             activeTab === "upcoming"
               ? "bg-green-500 text-black"
@@ -191,7 +233,9 @@ function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab("finished")}
+          onClick={() =>
+            setActiveTab("finished")
+          }
           className={`px-6 py-3 rounded-xl font-bold transition ${
             activeTab === "finished"
               ? "bg-green-500 text-black"
@@ -212,20 +256,32 @@ function Home() {
           filteredMatches.map((match) => (
 
             <MatchCard
-              match={match}
               key={match.fixture.id}
+              match={match}
               team1={match.teams.home.name}
               team2={match.teams.away.name}
               homeLogo={match.teams.home.logo}
               awayLogo={match.teams.away.logo}
-              score={`${match.goals.home ?? 0} - ${match.goals.away ?? 0}`}
+              score={`${match.goals.home ?? 0}-${match.goals.away ?? 0}`}
               time={new Date(
                 match.fixture.date
-              ).toLocaleTimeString("en-KE")}
-              stadium={match.fixture.venue.name}
+              ).toLocaleTimeString(
+                "en-KE",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                }
+              )}
+              stadium={
+                match.fixture.venue.name
+              }
               league={match.league.name}
-              minute={match.fixture.status.elapsed || 0}
-              status={match.fixture.status.short}
+              minute={
+                match.fixture.status.elapsed || 0
+              }
+              status={
+                match.fixture.status.short
+              }
             />
 
           ))
@@ -239,6 +295,10 @@ function Home() {
         )}
 
       </div>
+
+      {/* HIGHLIGHTS */}
+
+      <Highlights />
 
     </div>
   )
