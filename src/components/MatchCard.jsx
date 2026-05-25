@@ -18,6 +18,10 @@ import {
   getLiveMinute
 } from "../utils/liveTime"
 
+import {
+  generateForm
+} from "../utils/teamForm"
+
 function MatchCard({
   match,
   team1,
@@ -46,6 +50,12 @@ function MatchCard({
   const liveMinute =
     getLiveMinute(minute)
 
+  const homeForm =
+    generateForm()
+
+  const awayForm =
+    generateForm()
+
   function toggleFavorite(e) {
 
     e.preventDefault()
@@ -66,46 +76,58 @@ function MatchCard({
 
     <Link
       to={`/match/${match.fixture.id}`}
-      className={`rounded-2xl p-6 w-full md:w-[360px] border transition shadow-lg hover:scale-[1.02] ${
-        status === "LIVE"
-          ? "bg-slate-900 border-red-500 shadow-red-500/20"
-          : "bg-slate-900 border-slate-800 hover:border-green-500"
-      }`}
+      className="block bg-slate-900 border-b border-slate-800 hover:bg-slate-800 transition px-4 py-4"
     >
 
       {/* TOP */}
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-3">
 
         {/* LEAGUE */}
 
-        <div>
+        <div className="flex items-center gap-2">
 
-          <p className="text-green-400 text-sm font-bold">
-            {league}
-          </p>
-
-          <p className="text-slate-400 text-xs">
+          <span className="text-lg">
             {leagueInfo.flag}
-            {" "}
-            {leagueInfo.country}
-          </p>
+          </span>
+
+          <span className="text-sm text-slate-400 font-semibold">
+            {league}
+          </span>
 
         </div>
 
-        {/* STATUS + FAVORITE */}
+        {/* RIGHT */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+
+          {/* AI */}
+
+          <div className="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-full">
+
+            <span className="text-xs">
+              🧠
+            </span>
+
+            <span className="text-xs text-green-400 font-bold">
+              {aiPrediction.confidence}%
+            </span>
+
+          </div>
+
+          {/* FAVORITE */}
 
           <button
             onClick={toggleFavorite}
-            className="text-2xl hover:scale-110 transition"
+            className="text-xl"
           >
             {favorite ? "⭐" : "☆"}
           </button>
 
+          {/* STATUS */}
+
           <div
-            className={`px-3 py-1 rounded-full text-xs font-bold ${
+            className={`text-xs font-bold px-3 py-1 rounded-full ${
               status === "LIVE"
                 ? "bg-red-500 text-white animate-pulse"
                 : status === "FT"
@@ -115,7 +137,7 @@ function MatchCard({
           >
 
             {status === "LIVE"
-              ? `${liveMinute}' LIVE`
+              ? `${liveMinute}'`
               : status}
 
           </div>
@@ -124,77 +146,117 @@ function MatchCard({
 
       </div>
 
-      {/* MATCH */}
+      {/* MATCH ROW */}
 
-      <div className="space-y-5">
+      <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
 
-        {/* HOME */}
+        {/* TEAMS */}
 
-        <div className="flex items-center justify-between">
+        <div className="space-y-4">
 
-          <div className="flex items-center gap-4">
+          {/* HOME */}
+
+          <div className="flex items-center gap-3">
 
             <img
               src={homeLogo}
               alt={team1}
-              className="w-12 h-12"
+              className="w-7 h-7"
             />
 
-            <h2 className="font-bold text-lg">
-              {team1}
-            </h2>
+            <div>
+
+              <span className="font-semibold">
+                {team1}
+              </span>
+
+              <div className="flex gap-1 mt-1">
+
+                {homeForm.map((item, index) => (
+
+                  <span
+                    key={index}
+                    className={`text-[10px] px-1 rounded ${
+                      item === "W"
+                        ? "bg-green-500 text-black"
+                        : item === "L"
+                        ? "bg-red-500 text-white"
+                        : "bg-yellow-500 text-black"
+                    }`}
+                  >
+
+                    {item}
+
+                  </span>
+
+                ))}
+
+              </div>
+
+            </div>
 
           </div>
 
-          <span className="text-2xl font-bold text-green-400">
-            {score.split("-")[0]}
-          </span>
+          {/* AWAY */}
 
-        </div>
-
-        {/* AWAY */}
-
-        <div className="flex items-center justify-between">
-
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
 
             <img
               src={awayLogo}
               alt={team2}
-              className="w-12 h-12"
+              className="w-7 h-7"
             />
 
-            <h2 className="font-bold text-lg">
-              {team2}
-            </h2>
+            <div>
+
+              <span className="font-semibold">
+                {team2}
+              </span>
+
+              <div className="flex gap-1 mt-1">
+
+                {awayForm.map((item, index) => (
+
+                  <span
+                    key={index}
+                    className={`text-[10px] px-1 rounded ${
+                      item === "W"
+                        ? "bg-green-500 text-black"
+                        : item === "L"
+                        ? "bg-red-500 text-white"
+                        : "bg-yellow-500 text-black"
+                    }`}
+                  >
+
+                    {item}
+
+                  </span>
+
+                ))}
+
+              </div>
+
+            </div>
 
           </div>
 
-          <span className="text-2xl font-bold text-green-400">
-            {score.split("-")[1]}
-          </span>
-
         </div>
 
-      </div>
+        {/* SCORE */}
 
-      {/* AI PREDICTION */}
+        <div className="text-right">
 
-      <div className="mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div className="text-2xl font-bold text-green-400">
 
-        <p className="text-sm text-slate-400 mb-2">
-          🧠 AI Prediction
-        </p>
+            <div>
+              {score.split("-")[0]}
+            </div>
 
-        <div className="flex items-center justify-between">
+            <div>
+              {score.split("-")[1]}
+            </div>
 
-          <p className="font-bold text-green-400">
-            {aiPrediction.prediction}
-          </p>
-
-          <span className="text-sm bg-green-500 text-black px-3 py-1 rounded-full font-bold">
-            {aiPrediction.confidence}%
-          </span>
+          </div>
 
         </div>
 
@@ -202,15 +264,15 @@ function MatchCard({
 
       {/* FOOTER */}
 
-      <div className="mt-6 border-t border-slate-800 pt-4 space-y-2">
+      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
 
-        <p className="text-slate-300 text-sm">
+        <span>
           🕒 {time}
-        </p>
+        </span>
 
-        <p className="text-slate-400 text-sm">
+        <span>
           🏟️ {stadium}
-        </p>
+        </span>
 
       </div>
 

@@ -5,45 +5,55 @@ import {
 } from "react-router-dom"
 
 import Navbar from "./components/Navbar"
+import Sidebar from "./components/Sidebar"
 
 import Home from "./pages/Home"
 import MatchDetails from "./pages/MatchDetails"
 import Standings from "./pages/Standings"
 
 function App() {
+
   return (
+
     <BrowserRouter>
 
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-950 min-h-screen text-white flex">
 
-        {/* NAVBAR */}
+        {/* SIDEBAR */}
 
-        <Navbar />
+        <Sidebar />
 
-        {/* ROUTES */}
+        {/* MAIN */}
 
-        <Routes>
+        <div className="flex-1">
 
-          <Route
-            path="/"
-            element={<Home />}
-          />
+          <Navbar />
 
-          <Route
-            path="/match/:id"
-            element={<MatchDetails />}
-          />
+          <Routes>
 
-          <Route
-            path="/standings"
-            element={<Standings />}
-          />
+            <Route
+              path="/"
+              element={<Home />}
+            />
 
-        </Routes>
+            <Route
+              path="/match/:id"
+              element={<MatchDetails />}
+            />
+
+            <Route
+              path="/standings"
+              element={<Standings />}
+            />
+
+          </Routes>
+
+        </div>
 
       </div>
 
     </BrowserRouter>
+
   )
 }
 
