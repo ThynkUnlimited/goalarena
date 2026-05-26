@@ -56,6 +56,15 @@ function MatchCard({
   const awayForm =
     generateForm()
 
+  const isLive =
+    ["1H", "2H", "HT", "LIVE"].includes(status)
+
+  const isFinished =
+    ["FT", "AET", "PEN"].includes(status)
+
+  const isUpcoming =
+    ["NS", "TBD", "PST"].includes(status)
+
   function toggleFavorite(e) {
 
     e.preventDefault()
@@ -76,7 +85,7 @@ function MatchCard({
 
     <Link
       to={`/match/${match.fixture.id}`}
-      className="block bg-slate-900 border-b border-slate-800 hover:bg-slate-800 transition px-4 py-4"
+      className="block bg-zinc-950 border-b border-zinc-800 hover:bg-zinc-900 transition px-4 py-4"
     >
 
       {/* TOP */}
@@ -91,7 +100,7 @@ function MatchCard({
             {leagueInfo.flag}
           </span>
 
-          <span className="text-sm text-slate-400 font-semibold">
+          <span className="text-sm text-zinc-400 font-semibold">
             {league}
           </span>
 
@@ -103,13 +112,13 @@ function MatchCard({
 
           {/* AI */}
 
-          <div className="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-full">
+          <div className="hidden md:flex items-center gap-2 bg-zinc-800 px-3 py-1 rounded-full">
 
             <span className="text-xs">
               🧠
             </span>
 
-            <span className="text-xs text-green-400 font-bold">
+            <span className="text-xs text-orange-500 font-bold">
               {aiPrediction.confidence}%
             </span>
 
@@ -121,23 +130,31 @@ function MatchCard({
             onClick={toggleFavorite}
             className="text-xl"
           >
+
             {favorite ? "⭐" : "☆"}
+
           </button>
 
           {/* STATUS */}
 
           <div
             className={`text-xs font-bold px-3 py-1 rounded-full ${
-              status === "LIVE"
+              isLive
                 ? "bg-red-500 text-white animate-pulse"
-                : status === "FT"
+                : isFinished
                 ? "bg-green-500 text-black"
-                : "bg-slate-700 text-white"
+                : isUpcoming
+                ? "bg-blue-500 text-white"
+                : "bg-zinc-700 text-white"
             }`}
           >
 
-            {status === "LIVE"
+            {isLive
               ? `${liveMinute}'`
+              : isFinished
+              ? "Finished"
+              : isUpcoming
+              ? "Upcoming"
               : status}
 
           </div>
@@ -246,7 +263,7 @@ function MatchCard({
 
         <div className="text-right">
 
-          <div className="text-2xl font-bold text-green-400">
+          <div className="text-2xl font-bold text-orange-500">
 
             <div>
               {score.split("-")[0]}
@@ -264,7 +281,7 @@ function MatchCard({
 
       {/* FOOTER */}
 
-      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+      <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
 
         <span>
           🕒 {time}

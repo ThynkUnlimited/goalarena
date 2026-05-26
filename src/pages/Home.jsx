@@ -1,316 +1,287 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
+
+import { Link } from "react-router-dom"
 
 import MatchCard from "../components/MatchCard"
 
-import Highlights from "../components/Highlights"
+import RightPanel from "../components/RightPanel"
 
-import {
-  getLiveMatches,
-  getUpcomingMatches,
-  getFinishedMatches
-} from "../services/footballApi"
-
-import {
-  requestNotificationPermission,
-  showNotification
-} from "../utils/notifications"
-
-import { leagueData } from "../utils/leagues"
+import { getLiveMatches } from "../services/footballApi"
 
 function Home() {
 
   const [matches, setMatches] =
     useState([])
 
-  const [activeTab, setActiveTab] =
-    useState("live")
+  const [loading, setLoading] =
+    useState(true)
 
-  const [search, setSearch] =
-    useState("")
-
-  const [previousScores, setPreviousScores] =
-    useState({})
+  const [filter, setFilter] =
+    useState("all")
 
   useEffect(() => {
 
-    requestNotificationPermission()
+    async function fetchMatches() {
+
+      try {
+
+        const data =
+          await getLiveMatches()
+
+        setMatches(data)
+
+      } catch (error) {
+
+        console.log(error)
+
+      } finally {
+
+        setLoading(false)
+      }
+    }
 
     fetchMatches()
 
-    const interval = setInterval(() => {
+  }, [])
 
-      fetchMatches()
+  function filteredMatches() {
 
-    }, 60000)
-
-    return () => clearInterval(interval)
-
-  }, [activeTab])
-
-  async function fetchMatches() {
-
-    let data = []
-
-    if (activeTab === "live") {
-      data = await getLiveMatches()
-    }
-
-    if (activeTab === "upcoming") {
-      data = await getUpcomingMatches()
-    }
-
-    if (activeTab === "finished") {
-      data = await getFinishedMatches()
-    }
-
-    data.forEach((match) => {
-
-      const fixtureId =
-        match.fixture.id
-
-      const currentScore =
-        `${match.goals.home}-${match.goals.away}`
-
-      if (
-        previousScores[fixtureId] &&
-        previousScores[fixtureId] !== currentScore
-      ) {
-
-        showNotification(
-          "⚽ GoalArena Goal Alert",
-          `${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}`
-        )
-
-      }
-
-      previousScores[fixtureId] =
-        currentScore
-
-    })
-
-    setPreviousScores({
-      ...previousScores
-    })
-
-    setMatches(data)
-  }
-
-  const filteredMatches =
-    useMemo(() => {
+    if (filter === "live") {
 
       return matches.filter((match) => {
 
-        const home =
-          match.teams.home.name.toLowerCase()
+        const status =
+          match.fixture.status.short
 
-        const away =
-          match.teams.away.name.toLowerCase()
-
-        const league =
-          match.league.name.toLowerCase()
-
-        return (
-          home.includes(search.toLowerCase()) ||
-          away.includes(search.toLowerCase()) ||
-          league.includes(search.toLowerCase())
-        )
-
+        return [
+          "1H",
+          "2H",
+          "HT",
+          "ET",
+          "BT",
+          "LIVE"
+        ].includes(status)
       })
+    }
 
-    }, [matches, search])
+    if (filter === "upcoming") {
 
-  /* GROUP BY LEAGUE */
+      return matches.filter((match) => {
 
-  const groupedMatches =
-    filteredMatches.reduce(
-      (acc, match) => {
+        const status =
+          match.fixture.status.short
 
-        const league =
-          match.league.name
+        return [
+          "NS",
+          "TBD",
+          "PST"
+        ].includes(status)
+      })
+    }
 
-        if (!acc[league]) {
-          acc[league] = []
-        }
+    if (filter === "finished") {
 
-        acc[league].push(match)
+      return matches.filter((match) => {
 
-        return acc
+        const status =
+          match.fixture.status.short
 
-      },
-      {}
-    )
+        return [
+          "FT",
+          "AET",
+          "PEN"
+        ].includes(status)
+      })
+    }
+
+    return matches
+  }
+
+  function groupedMatches() {
+
+    const grouped = {}
+
+    filteredMatches().forEach((match) => {
+
+      const league =
+        match.league.name
+
+      if (!grouped[league]) {
+
+        grouped[league] = []
+      }
+
+      grouped[league].push(match)
+    })
+
+    return grouped
+  }
+
+  const grouped =
+    groupedMatches()
 
   return (
 
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="bg-black text-white min-h-screen flex">
 
-      {/* HEADER */}
+      {/* MAIN */}
 
-      <div className="px-4 md:px-8 pt-8 pb-6 border-b border-slate-800">
+      <div className="flex-1 px-4 md:px-6 py-5 overflow-hidden">
 
-        <h1 className="text-4xl font-bold text-green-500 mb-3">
-          ⚽ GoalArena
-        </h1>
+        {/* TOP BAR */}
 
-        <p className="text-slate-400">
-          Live Football Scores • Kenyan Time
-        </p>
+        <div className="flex items-center justify-between mb-8">
 
-      </div>
+          <button className="text-zinc-500 hover:text-white transition text-sm">
 
-      {/* SEARCH + TABS */}
+            ← Yesterday
 
-      <div className="sticky top-[72px] z-40 bg-slate-950 border-b border-slate-800 px-4 md:px-8 py-4">
-
-        {/* SEARCH */}
-
-        <input
-          type="text"
-          placeholder="Search teams or leagues..."
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          className="w-full md:w-[400px] bg-slate-900 border border-slate-700 rounded-xl px-5 py-3 text-white outline-none focus:border-green-500 mb-5"
-        />
-
-        {/* TABS */}
-
-        <div className="flex flex-wrap gap-4">
-
-          <button
-            onClick={() =>
-              setActiveTab("live")
-            }
-            className={`px-5 py-2 rounded-lg font-bold transition ${
-              activeTab === "live"
-                ? "bg-red-500 text-white"
-                : "bg-slate-800"
-            }`}
-          >
-            🔴 LIVE
           </button>
 
-          <button
-            onClick={() =>
-              setActiveTab("upcoming")
-            }
-            className={`px-5 py-2 rounded-lg font-bold transition ${
-              activeTab === "upcoming"
-                ? "bg-green-500 text-black"
-                : "bg-slate-800"
-            }`}
-          >
-            🕒 UPCOMING
-          </button>
+          <h1 className="text-3xl font-bold tracking-tight">
 
-          <button
-            onClick={() =>
-              setActiveTab("finished")
-            }
-            className={`px-5 py-2 rounded-lg font-bold transition ${
-              activeTab === "finished"
-                ? "bg-blue-500 text-white"
-                : "bg-slate-800"
-            }`}
-          >
-            ✅ FINISHED
+            Live Matches
+
+          </h1>
+
+          <button className="text-zinc-500 hover:text-white transition text-sm">
+
+            Tomorrow →
+
           </button>
 
         </div>
 
-      </div>
+        {/* FILTERS */}
 
-      {/* MATCHES */}
+        <div className="flex flex-wrap items-center gap-3 mb-8">
 
-      <div className="pb-20">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              filter === "all"
+                ? "bg-orange-500 text-black"
+                : "bg-zinc-950 border border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            }`}
+          >
 
-        {Object.keys(groupedMatches).length > 0 ? (
+            All
 
-          Object.entries(groupedMatches).map(
-            ([league, matches]) => {
+          </button>
 
-              const info =
-                leagueData[league] || {}
+          <button
+            onClick={() => setFilter("live")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              filter === "live"
+                ? "bg-red-500 text-white"
+                : "bg-zinc-950 border border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            }`}
+          >
 
-              return (
+            Live
+
+          </button>
+
+          <button
+            onClick={() => setFilter("upcoming")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              filter === "upcoming"
+                ? "bg-blue-500 text-white"
+                : "bg-zinc-950 border border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            }`}
+          >
+
+            Upcoming
+
+          </button>
+
+          <button
+            onClick={() => setFilter("finished")}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+              filter === "finished"
+                ? "bg-green-500 text-black"
+                : "bg-zinc-950 border border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            }`}
+          >
+
+            Finished
+
+          </button>
+
+        </div>
+
+        {/* LOADING */}
+
+        {loading ? (
+
+          <div className="text-zinc-500">
+
+            Loading matches...
+
+          </div>
+
+        ) : (
+
+          <div className="space-y-8">
+
+            {Object.entries(grouped).map(
+
+              ([league, leagueMatches]) => (
 
                 <div
                   key={league}
-                  className="mb-8"
+                  className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950"
                 >
 
                   {/* LEAGUE HEADER */}
 
-                  <div className="bg-slate-900 border-y border-slate-800 px-4 md:px-8 py-3 sticky top-[185px] z-30">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900">
 
-                    <div className="flex items-center gap-3">
+                    <Link
+                      to={`/league/${league}`}
+                      className="text-lg font-bold tracking-tight hover:text-orange-500 transition"
+                    >
 
-                      <span className="text-2xl">
-                        {info.flag}
-                      </span>
+                      {league}
 
-                      <div>
+                    </Link>
 
-                        <h2 className="font-bold text-lg">
-                          {league}
-                        </h2>
+                    <span className="text-xs text-zinc-500">
 
-                        <p className="text-xs text-slate-400">
-                          {info.country}
-                        </p>
+                      {leagueMatches.length} matches
 
-                      </div>
-
-                    </div>
+                    </span>
 
                   </div>
 
-                  {/* MATCH ROWS */}
+                  {/* MATCHES */}
 
                   <div>
 
-                    {matches.map((match) => (
+                    {leagueMatches.map((match) => (
 
                       <MatchCard
                         key={match.fixture.id}
                         match={match}
-                        team1={
-                          match.teams.home.name
-                        }
-                        team2={
-                          match.teams.away.name
-                        }
-                        homeLogo={
-                          match.teams.home.logo
-                        }
-                        awayLogo={
-                          match.teams.away.logo
-                        }
+                        team1={match.teams.home.name}
+                        team2={match.teams.away.name}
+                        homeLogo={match.teams.home.logo}
+                        awayLogo={match.teams.away.logo}
                         score={`${match.goals.home ?? 0}-${match.goals.away ?? 0}`}
                         time={new Date(
                           match.fixture.date
-                        ).toLocaleTimeString(
-                          "en-KE",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          }
-                        )}
+                        ).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
                         stadium={
-                          match.fixture.venue.name
+                          match.fixture.venue?.name ||
+                          "Unknown Stadium"
                         }
-                        league={
-                          match.league.name
-                        }
-                        minute={
-                          match.fixture.status.elapsed || 0
-                        }
-                        status={
-                          match.fixture.status.short
-                        }
+                        league={match.league.name}
+                        minute={match.fixture.status.elapsed}
+                        status={match.fixture.status.short}
                       />
-
                     ))}
 
                   </div>
@@ -318,26 +289,17 @@ function Home() {
                 </div>
 
               )
-            }
-          )
+            )}
 
-        ) : (
-
-          <div className="p-8 text-slate-400 text-xl">
-            No matches found.
           </div>
 
         )}
 
       </div>
 
-      {/* HIGHLIGHTS */}
+      {/* RIGHT PANEL */}
 
-      <div className="px-4 md:px-8 pb-20">
-
-        <Highlights />
-
-      </div>
+      <RightPanel />
 
     </div>
   )

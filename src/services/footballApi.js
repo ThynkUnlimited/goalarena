@@ -162,3 +162,44 @@ export async function getMatchHighlights() {
     }
   ]
 }
+export async function getTeamMatches(teamName) {
+
+  try {
+
+    const response = await api.get(
+
+      `/fixtures?team=${teamName}&last=10`
+
+    )
+
+    return response.data.response
+
+  } catch (error) {
+
+    console.error(error)
+
+    return []
+
+  }
+}
+
+export async function getTeamUpcoming(teamName) {
+
+  try {
+
+    const response = await api.get(
+
+      `/fixtures?team=${teamName}&next=5`
+
+    )
+
+    return response.data.response
+
+  } catch (error) {
+
+    console.error(error)
+
+    return []
+
+  }
+}

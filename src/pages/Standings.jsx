@@ -1,175 +1,276 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
-import {
-  getLeagueStandings
-} from "../services/footballApi"
+import { Link } from "react-router-dom"
+
+import standingsData from "../data/standingsData"
 
 function Standings() {
 
-  const [table, setTable] = useState([])
+  const leagues = [
+    "Premier League",
+    "La Liga",
+    "Serie A",
+    "Bundesliga",
+    "Ligue 1"
+  ]
 
-  const [league, setLeague] =
-    useState("39")
+  const [selectedLeague, setSelectedLeague] =
+    useState("Premier League")
 
-  useEffect(() => {
-
-    async function fetchStandings() {
-
-      const data =
-        await getLeagueStandings(league)
-
-      setTable(
-        data[0]?.league?.standings[0] || []
-      )
-    }
-
-    fetchStandings()
-
-  }, [league])
+  const table =
+    standingsData[selectedLeague] || []
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
 
-      <h1 className="text-4xl font-bold text-green-500 mb-8">
-        🏆 League Standings
-      </h1>
+    <div className="bg-black text-white min-h-screen p-4 md:p-6">
 
-      {/* LEAGUE SELECT */}
+      {/* HEADER */}
 
-      <select
-        value={league}
-        onChange={(e) =>
-          setLeague(e.target.value)
-        }
-        className="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 mb-8"
-      >
+      <div className="mb-8">
 
-        <option value="39">
-          Premier League
-        </option>
+        <h1 className="text-3xl md:text-4xl font-bold">
 
-        <option value="140">
-          La Liga
-        </option>
+          League Standings
 
-        <option value="135">
-          Serie A
-        </option>
+        </h1>
 
-        <option value="78">
-          Bundesliga
-        </option>
+        <p className="text-zinc-500 mt-2">
 
-      </select>
+          Top European Football Competitions
+
+        </p>
+
+      </div>
+
+      {/* LEAGUE BUTTONS */}
+
+      <div className="flex flex-wrap gap-3 mb-8">
+
+        {leagues.map((league) => (
+
+          <button
+            key={league}
+            onClick={() =>
+              setSelectedLeague(league)
+            }
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition ${
+              selectedLeague === league
+                ? "bg-orange-500 text-black"
+                : "bg-zinc-950 border border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            }`}
+          >
+
+            {league}
+
+          </button>
+
+        ))}
+
+      </div>
 
       {/* TABLE */}
 
-      <div className="overflow-x-auto">
+      <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950">
 
-        <table className="w-full bg-slate-900 rounded-2xl overflow-hidden">
+        {/* HEADER */}
 
-          <thead className="bg-slate-800">
+        <div className="grid grid-cols-[40px_1fr_40px_40px_40px_40px_50px_60px] items-center px-3 py-3 border-b border-zinc-800 bg-zinc-900 text-[11px] md:text-xs font-bold text-zinc-400 uppercase">
 
-            <tr>
+          <div>#</div>
 
-              <th className="p-4 text-left">
-                #
-              </th>
+          <div>Team</div>
 
-              <th className="p-4 text-left">
-                Team
-              </th>
+          <div className="text-center">
 
-              <th className="p-4">
-                MP
-              </th>
+            P
 
-              <th className="p-4">
-                W
-              </th>
+          </div>
 
-              <th className="p-4">
-                D
-              </th>
+          <div className="text-center">
 
-              <th className="p-4">
-                L
-              </th>
+            W
 
-              <th className="p-4">
-                GD
-              </th>
+          </div>
 
-              <th className="p-4">
-                PTS
-              </th>
+          <div className="text-center">
 
-            </tr>
+            D
 
-          </thead>
+          </div>
 
-          <tbody>
+          <div className="text-center">
 
-            {table.map((team) => (
+            L
 
-              <tr
-                key={team.team.id}
-                className="border-b border-slate-800 hover:bg-slate-800 transition"
-              >
+          </div>
 
-                <td className="p-4 font-bold">
-                  {team.rank}
-                </td>
+          <div className="text-center">
 
-                <td className="p-4">
+            GD
 
-                  <div className="flex items-center gap-3">
+          </div>
 
-                    <img
-                      src={team.team.logo}
-                      alt={team.team.name}
-                      className="w-8 h-8"
-                    />
+          <div className="text-center font-extrabold text-white">
 
-                    <span>
-                      {team.team.name}
-                    </span>
+            PTS
 
-                  </div>
+          </div>
 
-                </td>
+        </div>
 
-                <td className="p-4 text-center">
-                  {team.all.played}
-                </td>
+        {/* TEAMS */}
 
-                <td className="p-4 text-center">
-                  {team.all.win}
-                </td>
+        {table.map((team, index) => (
 
-                <td className="p-4 text-center">
-                  {team.all.draw}
-                </td>
+          <div
+            key={index}
+            className="grid grid-cols-[40px_1fr_40px_40px_40px_40px_50px_60px] items-center px-3 py-3 border-b border-zinc-800 hover:bg-zinc-900 transition text-[11px] md:text-sm"
+          >
 
-                <td className="p-4 text-center">
-                  {team.all.lose}
-                </td>
+            {/* POSITION */}
 
-                <td className="p-4 text-center">
-                  {team.goalsDiff}
-                </td>
+            <div
+              className={`font-bold ${
+                index < 4
+                  ? "text-blue-400"
+                  : index >= table.length - 3
+                  ? "text-red-400"
+                  : "text-zinc-400"
+              }`}
+            >
 
-                <td className="p-4 text-center font-bold text-green-400">
-                  {team.points}
-                </td>
+              {index + 1}
 
-              </tr>
+            </div>
 
-            ))}
+            {/* TEAM */}
 
-          </tbody>
+            <Link
+              to={`/team/${team.team}`}
+              className="font-semibold truncate hover:text-orange-500 transition"
+            >
 
-        </table>
+              {team.team}
+
+            </Link>
+
+            {/* PLAYED */}
+
+            <div className="text-center text-zinc-300">
+
+              {team.p}
+
+            </div>
+
+            {/* WINS */}
+
+            <div className="text-center text-green-400">
+
+              {team.w}
+
+            </div>
+
+            {/* DRAWS */}
+
+            <div className="text-center text-yellow-400">
+
+              {team.d}
+
+            </div>
+
+            {/* LOSSES */}
+
+            <div className="text-center text-red-400">
+
+              {team.l}
+
+            </div>
+
+            {/* GOAL DIFFERENCE */}
+
+            <div className="text-center text-zinc-300">
+
+              {team.gd > 0
+                ? `+${team.gd}`
+                : team.gd}
+
+            </div>
+
+            {/* POINTS */}
+
+            <div className="text-center font-extrabold text-white">
+
+              {team.pts}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* KEY */}
+
+      <div className="mt-8 border border-zinc-800 rounded-2xl bg-zinc-950 p-5">
+
+        <h2 className="text-lg font-bold mb-4">
+
+          Key
+
+        </h2>
+
+        <div className="space-y-3 text-sm">
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+
+            <span>
+
+              Champions League
+
+            </span>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-1 h-6 bg-orange-500 rounded-full"></div>
+
+            <span>
+
+              Europa League
+
+            </span>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-1 h-6 bg-green-500 rounded-full"></div>
+
+            <span>
+
+              Europa Conference League
+
+            </span>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-1 h-6 bg-red-500 rounded-full"></div>
+
+            <span>
+
+              Relegation
+
+            </span>
+
+          </div>
+
+        </div>
 
       </div>
 

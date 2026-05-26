@@ -1,356 +1,421 @@
-import { useEffect, useState } from "react"
-
 import { useParams } from "react-router-dom"
-
-import {
-  getMatchStatistics,
-  getMatchLineups,
-  getMatchEvents
-} from "../services/footballApi"
 
 function MatchDetails() {
 
   const { id } = useParams()
 
-  const [stats, setStats] = useState([])
-  const [lineups, setLineups] = useState([])
-  const [events, setEvents] = useState([])
+  const stats = [
 
-  useEffect(() => {
+    {
+      label: "Possession",
+      home: "61%",
+      away: "39%"
+    },
 
-    async function fetchData() {
+    {
+      label: "Shots",
+      home: 14,
+      away: 7
+    },
 
-      const statsData =
-        await getMatchStatistics(id)
+    {
+      label: "Shots on Target",
+      home: 6,
+      away: 3
+    },
 
-      const lineupData =
-        await getMatchLineups(id)
+    {
+      label: "Corners",
+      home: 8,
+      away: 3
+    },
 
-      const eventsData =
-        await getMatchEvents(id)
-
-      setStats(statsData)
-      setLineups(lineupData)
-      setEvents(eventsData)
+    {
+      label: "Yellow Cards",
+      home: 2,
+      away: 4
     }
 
-    fetchData()
+  ]
 
-  }, [id])
+  const timeline = [
 
-  function getEventIcon(type) {
+    {
+      minute: "12'",
+      event: "⚽ Palmer Goal"
+    },
 
-    if (type === "Goal") return "⚽"
+    {
+      minute: "31'",
+      event: "🟨 Rice Yellow Card"
+    },
 
-    if (type === "Card") return "🟨"
+    {
+      minute: "57'",
+      event: "⚽ Jackson Goal"
+    },
 
-    if (type === "subst") return "🔄"
+    {
+      minute: "74'",
+      event: "🔄 Substitution"
+    }
 
-    if (type === "Var") return "📺"
+  ]
 
-    return "🔥"
-  }
+  const homeLineup = [
+
+    "Sanchez",
+
+    "James",
+    "Disasi",
+    "Silva",
+    "Cucurella",
+
+    "Caicedo",
+    "Enzo",
+
+    "Sterling",
+    "Palmer",
+    "Mudryk",
+
+    "Jackson"
+
+  ]
+
+  const awayLineup = [
+
+    "Raya",
+
+    "White",
+    "Saliba",
+    "Gabriel",
+    "Zinchenko",
+
+    "Rice",
+    "Odegaard",
+    "Havertz",
+
+    "Saka",
+    "Martinelli",
+    "Jesus"
+
+  ]
 
   return (
 
-    <div className="min-h-screen bg-slate-950 text-white p-4 md:p-6">
+    <div className="bg-black text-white min-h-screen px-4 md:px-6 py-5">
 
-      {/* HEADER */}
+      {/* MATCH HEADER */}
 
-      <div className="mb-10">
+      <div className="border border-zinc-800 rounded-2xl bg-zinc-950 p-6">
 
-        <h1 className="text-4xl font-bold text-green-500 mb-2">
-          ⚽ Match Center
-        </h1>
+        {/* LEAGUE */}
 
-        <p className="text-slate-400">
-          Live statistics, events & team lineups
-        </p>
+        <div className="text-sm text-zinc-500 mb-5">
 
-      </div>
+          Premier League • Live
 
-      {/* TOP GRID */}
+        </div>
 
-      <div className="grid xl:grid-cols-3 gap-6">
+        {/* SCOREBOARD */}
 
-        {/* LEFT SIDE */}
+        <div className="grid grid-cols-3 items-center">
 
-        <div className="xl:col-span-2 space-y-6">
+          {/* HOME */}
 
-          {/* MATCH EVENTS */}
+          <div className="flex flex-col items-center text-center">
 
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+            <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl">
 
-            <div className="flex items-center justify-between mb-6">
-
-              <h2 className="text-2xl font-bold text-green-400">
-                🔥 Match Timeline
-              </h2>
-
-              <div className="bg-red-500 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                LIVE
-              </div>
+              ⚽
 
             </div>
 
-            {events.length > 0 ? (
+            <h2 className="mt-3 text-lg font-semibold">
 
-              <div className="space-y-4">
+              Chelsea
 
-                {events.map((event, index) => (
-
-                  <div
-                    key={index}
-                    className="flex items-center gap-4 bg-slate-800 hover:bg-slate-700 transition rounded-2xl p-4"
-                  >
-
-                    {/* MINUTE */}
-
-                    <div className="min-w-[55px] text-center">
-
-                      <span className="text-green-400 font-bold text-lg">
-                        {event.time.elapsed}'
-                      </span>
-
-                    </div>
-
-                    {/* ICON */}
-
-                    <div className="text-2xl">
-
-                      {getEventIcon(event.type)}
-
-                    </div>
-
-                    {/* DETAILS */}
-
-                    <div className="flex-1">
-
-                      <p className="font-bold text-white">
-                        {event.player?.name || "Unknown Player"}
-                      </p>
-
-                      <p className="text-sm text-slate-400">
-                        {event.team?.name}
-                      </p>
-
-                    </div>
-
-                    {/* EVENT TYPE */}
-
-                    <div className="text-right">
-
-                      <p className="text-sm font-bold text-green-400">
-                        {event.type}
-                      </p>
-
-                      <p className="text-xs text-slate-500">
-                        {event.detail}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-            ) : (
-
-              <div className="bg-slate-800 rounded-2xl p-8 text-center">
-
-                <p className="text-slate-400">
-                  No live events available.
-                </p>
-
-              </div>
-
-            )}
+            </h2>
 
           </div>
 
-          {/* MATCH STATISTICS */}
+          {/* SCORE */}
 
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+          <div className="text-center">
 
-            <h2 className="text-2xl font-bold mb-6 text-green-400">
-              📊 Match Statistics
+            <div className="text-5xl font-bold tracking-tight">
+
+              2 - 1
+
+            </div>
+
+            <div className="mt-3">
+
+              <span className="bg-red-500/20 text-red-500 text-xs font-bold px-3 py-1 rounded-full">
+
+                LIVE 78'
+
+              </span>
+
+            </div>
+
+          </div>
+
+          {/* AWAY */}
+
+          <div className="flex flex-col items-center text-center">
+
+            <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl">
+
+              ⚽
+
+            </div>
+
+            <h2 className="mt-3 text-lg font-semibold">
+
+              Arsenal
+
             </h2>
-
-            {stats.length > 1 ? (
-
-              <div className="space-y-5">
-
-                {stats[0].statistics.map((item, index) => {
-
-                  const homeValue =
-                    item.value ?? 0
-
-                  const awayValue =
-                    stats[1]?.statistics[index]?.value ?? 0
-
-                  return (
-
-                    <div
-                      key={index}
-                      className="bg-slate-800 rounded-2xl p-4"
-                    >
-
-                      {/* LABEL */}
-
-                      <div className="flex justify-between mb-3">
-
-                        <span className="text-green-400 font-bold">
-                          {homeValue}
-                        </span>
-
-                        <span className="text-slate-300 font-semibold">
-                          {item.type}
-                        </span>
-
-                        <span className="text-blue-400 font-bold">
-                          {awayValue}
-                        </span>
-
-                      </div>
-
-                      {/* BAR */}
-
-                      <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden flex">
-
-                        <div
-                          className="bg-green-500 h-3"
-                          style={{
-                            width: `${parseInt(homeValue) || 50}%`
-                          }}
-                        />
-
-                        <div
-                          className="bg-blue-500 h-3"
-                          style={{
-                            width: `${parseInt(awayValue) || 50}%`
-                          }}
-                        />
-
-                      </div>
-
-                    </div>
-
-                  )
-                })}
-
-              </div>
-
-            ) : (
-
-              <div className="bg-slate-800 rounded-2xl p-8 text-center">
-
-                <p className="text-slate-400">
-                  No statistics available.
-                </p>
-
-              </div>
-
-            )}
 
           </div>
 
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* EXTRA INFO */}
 
-        <div>
+        <div className="mt-6 pt-5 border-t border-zinc-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 sticky top-4">
+          <div>
 
-            <h2 className="text-2xl font-bold mb-6 text-green-400">
-              👥 Team Lineups
-            </h2>
+            <p className="text-zinc-500">
 
-            {lineups.length > 0 ? (
+              Stadium
 
-              <div className="space-y-8">
+            </p>
 
-                {lineups.map((team, index) => (
+            <p className="mt-1 text-zinc-300">
 
-                  <div
-                    key={index}
-                    className="bg-slate-800 rounded-2xl p-5"
-                  >
+              Stamford Bridge
 
-                    {/* TEAM */}
+            </p>
 
-                    <div className="flex items-center gap-4 mb-5">
+          </div>
 
-                      <img
-                        src={team.team.logo}
-                        alt={team.team.name}
-                        className="w-12 h-12"
-                      />
+          <div>
 
-                      <div>
+            <p className="text-zinc-500">
 
-                        <h3 className="text-lg font-bold">
-                          {team.team.name}
-                        </h3>
+              Referee
 
-                        <p className="text-slate-400 text-sm">
-                          Formation: {team.formation}
-                        </p>
+            </p>
 
-                      </div>
+            <p className="mt-1 text-zinc-300">
 
-                    </div>
+              Michael Oliver
 
-                    {/* PLAYERS */}
+            </p>
 
-                    <div className="space-y-2">
+          </div>
 
-                      {team.startXI.map((player, idx) => (
+          <div>
 
-                        <div
-                          key={idx}
-                          className="flex justify-between items-center border-b border-slate-700 pb-2 text-sm"
-                        >
+            <p className="text-zinc-500">
 
-                          <span className="font-medium">
+              Attendance
 
-                            {player.player.number}.
-                            {" "}
-                            {player.player.name}
+            </p>
 
-                          </span>
+            <p className="mt-1 text-zinc-300">
 
-                          <span className="text-slate-400">
+              40,221
 
-                            {player.player.pos}
+            </p>
 
-                          </span>
+          </div>
 
-                        </div>
+          <div>
 
-                      ))}
+            <p className="text-zinc-500">
 
-                    </div>
+              Match ID
 
-                  </div>
+            </p>
 
-                ))}
+            <p className="mt-1 text-zinc-300">
 
-              </div>
+              #{id}
 
-            ) : (
+            </p>
 
-              <div className="bg-slate-800 rounded-2xl p-8 text-center">
+          </div>
 
-                <p className="text-slate-400">
-                  No lineups available.
-                </p>
+        </div>
 
-              </div>
+      </div>
 
-            )}
+      {/* MATCH STATS */}
+
+      <div className="mt-6 border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950">
+
+        <div className="px-4 py-3 border-b border-zinc-800 text-sm font-semibold">
+
+          Match Statistics
+
+        </div>
+
+        {stats.map((stat, index) => (
+
+          <div
+            key={index}
+            className="grid grid-cols-[60px_1fr_60px] items-center px-4 py-3 border-b border-zinc-800 text-sm"
+          >
+
+            <div className="text-left text-zinc-300 font-medium">
+
+              {stat.home}
+
+            </div>
+
+            <div className="text-center text-zinc-500">
+
+              {stat.label}
+
+            </div>
+
+            <div className="text-right text-zinc-300 font-medium">
+
+              {stat.away}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* MATCH TIMELINE */}
+
+      <div className="mt-6 border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950">
+
+        <div className="px-4 py-3 border-b border-zinc-800 text-sm font-semibold">
+
+          Match Timeline
+
+        </div>
+
+        {timeline.map((event, index) => (
+
+          <div
+            key={index}
+            className="flex items-center gap-4 px-4 py-3 border-b border-zinc-800 text-sm hover:bg-zinc-900 transition"
+          >
+
+            <div className="text-orange-500 font-semibold w-[45px]">
+
+              {event.minute}
+
+            </div>
+
+            <div className="text-zinc-300">
+
+              {event.event}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* LINEUPS */}
+
+      <div className="mt-6 border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950">
+
+        {/* HEADER */}
+
+        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+
+          <h2 className="text-sm font-semibold">
+
+            Starting Lineups
+
+          </h2>
+
+          <div className="flex items-center gap-4 text-xs text-zinc-500">
+
+            <span>
+              Chelsea • 4-2-3-1
+            </span>
+
+            <span>
+              Arsenal • 4-3-3
+            </span>
+
+          </div>
+
+        </div>
+
+        {/* LINEUPS GRID */}
+
+        <div className="grid md:grid-cols-2">
+
+          {/* HOME */}
+
+          <div className="border-b md:border-b-0 md:border-r border-zinc-800">
+
+            <div className="px-4 py-3 border-b border-zinc-800 text-sm font-semibold text-zinc-300">
+
+              Chelsea XI
+
+            </div>
+
+            <div className="p-4 space-y-2">
+
+              {homeLineup.map((player, index) => (
+
+                <div
+                  key={index}
+                  className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition"
+                >
+
+                  {player}
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+          {/* AWAY */}
+
+          <div>
+
+            <div className="px-4 py-3 border-b border-zinc-800 text-sm font-semibold text-zinc-300">
+
+              Arsenal XI
+
+            </div>
+
+            <div className="p-4 space-y-2">
+
+              {awayLineup.map((player, index) => (
+
+                <div
+                  key={index}
+                  className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition"
+                >
+
+                  {player}
+
+                </div>
+
+              ))}
+
+            </div>
 
           </div>
 

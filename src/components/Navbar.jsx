@@ -1,102 +1,69 @@
-import {
-  Link,
-  useLocation
-} from "react-router-dom"
+import { Link } from "react-router-dom"
 
-import { useEffect, useState } from "react"
-
-import {
-  getTheme,
-  setTheme
-} from "../utils/theme"
+import SearchBar from "./SearchBar"
 
 function Navbar() {
 
-  const location = useLocation()
-
-  const [theme, setThemeState] =
-    useState("dark")
-
-  useEffect(() => {
-
-    setThemeState(
-      getTheme()
-    )
-
-  }, [])
-
-  function toggleTheme() {
-
-    const newTheme =
-      theme === "dark"
-        ? "light"
-        : "dark"
-
-    setTheme(newTheme)
-
-    setThemeState(newTheme)
-  }
-
-  function active(path) {
-
-    return location.pathname === path
-      ? "text-green-400"
-      : theme === "dark"
-      ? "text-white"
-      : "text-slate-900"
-  }
-
   return (
 
-    <nav className={`border-b px-6 py-4 flex items-center justify-between sticky top-0 z-50 ${
-      theme === "dark"
-        ? "bg-slate-900 border-slate-800"
-        : "bg-white border-slate-300"
-    }`}>
+    <header className="sticky top-0 z-50 bg-black border-b border-zinc-800 px-4 md:px-6 py-4">
 
-      {/* LOGO */}
+      <div className="flex items-center justify-between gap-4">
 
-      <Link
-        to="/"
-        className="text-3xl font-bold text-green-500"
-      >
-        ⚽ GoalArena
-      </Link>
-
-      {/* LINKS */}
-
-      <div className="flex items-center gap-6 text-lg font-semibold">
+        {/* LOGO */}
 
         <Link
           to="/"
-          className={`${active("/")} hover:text-green-400 transition`}
+          className="flex items-center gap-3 shrink-0"
         >
-          Home
+
+          <div className="w-10 h-10 rounded-2xl bg-orange-500 flex items-center justify-center text-black font-black text-lg">
+
+            ⚽
+
+          </div>
+
+          <div>
+
+            <h1 className="text-lg font-bold tracking-tight text-white">
+
+              GoalArena
+
+            </h1>
+
+            <p className="text-[11px] text-zinc-500">
+
+              Live Football Hub
+
+            </p>
+
+          </div>
+
         </Link>
 
-        <Link
-          to="/standings"
-          className={`${active("/standings")} hover:text-green-400 transition`}
-        >
-          Standings
-        </Link>
+        {/* SEARCH */}
 
-        {/* THEME BUTTON */}
+        <div className="flex-1 flex justify-center">
 
-        <button
-          onClick={toggleTheme}
-          className="text-2xl"
-        >
+          <SearchBar />
 
-          {theme === "dark"
-            ? "🌙"
-            : "☀️"}
+        </div>
 
-        </button>
+        {/* RIGHT ACTIONS */}
+
+        <div className="flex items-center gap-3 shrink-0">
+
+          <button className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition px-4 py-2 rounded-2xl text-sm text-zinc-300">
+
+            Login
+
+          </button>
+
+        </div>
 
       </div>
 
-    </nav>
+    </header>
   )
 }
 
